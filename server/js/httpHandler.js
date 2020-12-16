@@ -33,6 +33,9 @@ module.exports.router = (req, res, next = ()=>{}) => {
       }
 
       var nonRelativePath = path.join('.', urlPath);
+      if (req.url === '/background.jpg') {
+        nonRelativePath = module.exports.backgroundImageFile;
+      }
 
       fs.readFile(nonRelativePath, (err, data) => {
         if (err) {
