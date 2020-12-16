@@ -27,11 +27,6 @@ describe('server responses', () => {
     httpHandler.router(req, res);
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
-    var responseData = res._data.toString();
-    console.log('response data: ' + responseData + ' response data length: ' + responseData.length);
-    var responseHeaders = res._headers;
-    console.log(responseHeaders);
-    //expect()
     expect(['left','right','up','down']).to.include(res._data.toString());
     done();
   });
