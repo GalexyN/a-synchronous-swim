@@ -30,6 +30,7 @@ module.exports.initialize = (callback) => {
 
   // setup an event handler on standard input
   process.stdin.on('keypress', (chunk, key) => {
+    console.log('key press detected' + chunk + key)
     // ctrl+c should quit the program
     if (key && key.ctrl && key.name === 'c') {
       process.exit();
@@ -40,7 +41,7 @@ module.exports.initialize = (callback) => {
       callback(key.name);
       return; // don't do any more processing on this key
     }
-    
+
     // otherwise build up a message from individual characters
     if (key && (key.name === 'return' || key.name === 'enter')) {
       // on enter, process the message

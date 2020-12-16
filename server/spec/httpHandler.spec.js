@@ -5,14 +5,14 @@ const expect = require('chai').expect;
 const server = require('./mockServer');
 
 const httpHandler = require('../js/httpHandler');
-
-
+const queue = require('../js/messageQueue');
 
 describe('server responses', () => {
 
   it('should respond to a OPTIONS request', (done) => {
     let {req, res} = server.mock('/', 'OPTIONS');
 
+    httpHandler.initialize(queue);
     httpHandler.router(req, res);
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
@@ -21,13 +21,28 @@ describe('server responses', () => {
     done();
   });
 
-  it('should respond to a GET request for a swim command', (done) => {
+  it('should respond to a GET request for a swim command with a 204 when there is nothing in the queue', (done) => {
     let {req, res} = server.mock('/', 'GET');
 
+    httpHandler.initialize(queue);
+    httpHandler.router(req, res);
+    expect(res._responseCode).to.equal(204);
+    expect(res._ended).to.equal(true);
+
+    done();
+  });
+
+  it('should respond to a GET request for a swim command with a command from the queue', (done) => {
+    var expectedResponse = 'left';
+    queue.enqueue(expectedResponse);
+
+    let {req, res} = server.mock('/', 'GET');
+
+    httpHandler.initialize(queue);
     httpHandler.router(req, res);
     expect(res._responseCode).to.equal(200);
     expect(res._ended).to.equal(true);
-    expect(['left','right','up','down']).to.include(res._data.toString());
+    expect(res._data.toString()).to.equal(expectedResponse);
     done();
   });
 

@@ -47,25 +47,25 @@ const SwimTeam = {
     switch (direction) {
     case 'up':
       if (SwimTeam.coords.top > SwimTeam.max.top) {
-        SwimTeam.coords.top -= 5;
+        SwimTeam.coords.top -= 15;
       }
       break;
     case 'down':
       if (SwimTeam.coords.top < SwimTeam.max.bottom) {
-        SwimTeam.coords.top += 5;
+        SwimTeam.coords.top += 15;
       }
       break;
     case 'left':
       if (SwimTeam.coords.left > SwimTeam.max.left) {
-        SwimTeam.coords.left -= 5;
+        SwimTeam.coords.left -= 15;
       }
       break;
     case 'right':
       if (SwimTeam.coords.left < SwimTeam.max.right) {
-        SwimTeam.coords.left += 5;
+        SwimTeam.coords.left += 15;
       }
       break;
-    } 
+    }
   }
 
 };
