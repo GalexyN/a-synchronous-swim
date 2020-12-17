@@ -12,7 +12,7 @@ module.exports.initialize = (queue) => {
   messageQueue = queue;
 };
 
-module.exports.router = (req, res, next = ()=>{}) => {
+module.exports.router = (req, res, next = () => { }) => {
   console.log('Serving request type ' + req.method + ' for url ' + req.url);
 
   var respond = function (statusCode, body) {
@@ -47,10 +47,43 @@ module.exports.router = (req, res, next = ()=>{}) => {
     } else if (req.url === '/') {
       var message = messageQueue.dequeue();
       if (message) {
-        respond(200,message);
+        respond(200, message);
       } else {
         respond(204);
       }
+    }
+  } else if (req.method === 'POST') {
+    if (req.url === '/post-text') {
+      var text = '';
+      req.on('data', chunk => {
+        console.log(chunk.toString());
+        text += chunk;
+      })
+      req.on('end', () => {
+        console.log(text);
+        respond(200);
+      });
+    } else if (!req.url === '/background.jpg') {
+      respond(403);
+    } else {
+      var buff;
+      req.on('data', chunk => {
+        console.log(buff);
+        if (!buff) {
+          buff = chunk;
+        } else {
+          buff = Buffer.concat([buff, chunk]);
+        }
+      });
+      req.on('end', () => {
+        fs.writeFile(module.exports.backgroundImageFile, buff, (err) => {
+          if (err) {
+            respond(500);
+          } else {
+            respond(201);
+          }
+        })
+      });
     }
   } else {
     respond(200);
