@@ -4,7 +4,7 @@ const headers = require('./cors');
 const multipart = require('./multipartUtils');
 
 // Path for the background image ///////////////////////
-module.exports.backgroundImageFile = path.join('..', 'background.jpg');
+module.exports.backgroundImageFile = path.join('.', 'background.jpg');
 ////////////////////////////////////////////////////////
 
 let messageQueue = null;
@@ -15,8 +15,14 @@ module.exports.initialize = (queue) => {
 module.exports.router = (req, res, next = () => { }) => {
   console.log('Serving request type ' + req.method + ' for url ' + req.url);
 
-  var respond = function (statusCode, body) {
-    res.writeHead(statusCode, headers);
+  var respond = function (statusCode, body, extraHeaders) {
+    console.log("Sending response status: " + statusCode);
+    if (extraHeaders) {
+      res.writeHead(statusCode, { ...headers, ...extraHeaders })
+    } else {
+      res.writeHead(statusCode, headers);
+    }
+
     if (body) {
       res.write(body);
     }
@@ -41,7 +47,7 @@ module.exports.router = (req, res, next = () => { }) => {
         if (err) {
           respond(404);
         } else {
-          respond(200, data);
+          respond(200, data, {'Cache-Control': 'no-cache'});
         }
       });
     } else if (req.url === '/') {
@@ -71,12 +77,22 @@ module.exports.router = (req, res, next = () => { }) => {
         console.log(buff);
         if (!buff) {
           buff = chunk;
+          console.log(buff);
         } else {
           buff = Buffer.concat([buff, chunk]);
         }
       });
       req.on('end', () => {
-        fs.writeFile(module.exports.backgroundImageFile, buff, (err) => {
+
+        var fileData = multipart.getFile(buff).data;
+        // for (var i = 3; i < buff.length; i++) {
+        //   if (buff[i - 3] === 13 && buff[i - 2] === 10 && buff[i - 1] === 13 && buff[i] === 10) {
+        //     buff = buff.slice(i + 1);
+        //     break;
+        //   }
+        // }
+
+        fs.writeFile(module.exports.backgroundImageFile, fileData, (err) => {
           if (err) {
             respond(500);
           } else {
@@ -89,4 +105,3 @@ module.exports.router = (req, res, next = () => { }) => {
     respond(200);
   }
 };
-

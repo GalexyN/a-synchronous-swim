@@ -37,6 +37,7 @@
       contentType: false,
       processData: false,
       success: () => {
+        console.log('success');
         // reload the page
         window.location = window.location.href;
       }
