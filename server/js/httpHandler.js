@@ -4,7 +4,7 @@ const headers = require('./cors');
 const multipart = require('./multipartUtils');
 
 // Path for the background image ///////////////////////
-module.exports.backgroundImageFile = path.join('.', 'background.jpg');
+module.exports.backgroundImageFile = path.join('.', 'background');
 ////////////////////////////////////////////////////////
 
 let messageQueue = null;
@@ -39,8 +39,9 @@ module.exports.router = (req, res, next = () => { }) => {
       }
 
       var nonRelativePath = path.join('.', urlPath);
-      if (req.url === '/background.jpg') {
-        nonRelativePath = module.exports.backgroundImageFile;
+      var matchResult = req.url.match(/background\.(?<FileExtensions>jpg|png)/)
+      if (matchResult) {
+        nonRelativePath = module.exports.backgroundImageFile + '.' + matchResult.groups.FileExtensions;
       }
 
       fs.readFile(nonRelativePath, (err, data) => {
@@ -59,18 +60,10 @@ module.exports.router = (req, res, next = () => { }) => {
       }
     }
   } else if (req.method === 'POST') {
-    if (req.url === '/post-text') {
-      var text = '';
-      req.on('data', chunk => {
-        console.log(chunk.toString());
-        text += chunk;
-      })
-      req.on('end', () => {
-        respond(200);
-      });
-    } else if (!req.url === '/background.jpg') {
+    if (!req.url === '/background') {
       respond(403);
     } else {
+      console.log(req.headers['Content-Type'])
       var buff;
       req.on('data', chunk => {
         if (!buff) {
@@ -80,9 +73,7 @@ module.exports.router = (req, res, next = () => { }) => {
         }
       });
       req.on('end', () => {
-
         var fileData = multipart.getFile(buff).data;
-
         fs.writeFile(module.exports.backgroundImageFile, fileData, (err) => {
           if (err) {
             respond(500);
@@ -93,6 +84,6 @@ module.exports.router = (req, res, next = () => { }) => {
       });
     }
   } else {
-    respond(200);
+    respond(405);
   }
 };

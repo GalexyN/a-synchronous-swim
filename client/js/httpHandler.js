@@ -54,8 +54,8 @@
     }
 
     var file = form.files[0];
-    if (file.type !== 'image/jpeg') {
-      console.log('Not a jpg file!');
+    if (!(file.type === 'image/jpeg' || file.type === 'image/png')) {
+      console.log('Not a jpg / png file!');
       return;
     }
 
