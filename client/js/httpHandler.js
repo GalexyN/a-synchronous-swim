@@ -22,7 +22,7 @@
     });
   };
 
-  setInterval(() => ajaxRandomCommand(), 2500);
+  setInterval(() => ajaxRandomCommand(), 500);
 
 
 

@@ -97,24 +97,6 @@ describe('server responses', () => {
           expect(Buffer.compare(multipartUtils.getFile(fileData).data, get.res._data)).to.equal(0);
           done();
         });
-
-  // it('should send back the previously saved image', (done) => {
-  //   fs.readFile(postTestFile, (err, fileData) => {
-  //     httpHandler.backgroundImageFile = path.join('.', 'spec', 'temp.jpg');
-  //     let post = server.mock('/background.jpg', 'POST', fileData);
-
-  //     httpHandler.router(post.req, post.res, () => {
-  //       let get = server.mock('/background.jpg', 'GET');
-  //       httpHandler.router(get.req, get.res, () => {
-
-  //         var multipartParsedFile = multipartUtils.getFile(fileData);
-  //         var expected = multipartParsedFile.data;
-  //         var actual = get.res._data;
-
-  //         expect(Buffer.compare(expected, actual)).to.equal(0);
-
-  //         done();
-  //       });
       });
     });
   });

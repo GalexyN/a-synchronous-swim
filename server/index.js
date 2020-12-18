@@ -1,18 +1,3 @@
-/*const fs = require('fs');
-
-fs.readFile('./spec/water-sm.jpg', (err, data) => {
-  if (err) {
-    console.log('error: ', err);
-  } else {
-    fs.writeFile('./background.jpg', data, (err) => {
-      if (err) {
-        console.log('writing error: ', err);
-      }
-    })
-  }
-});*/
-
-
 const queue = require('./js/messageQueue');
 
 const keypressHandler = require('./js/keypressHandler');
