@@ -22,7 +22,7 @@
     });
   };
 
-  setInterval(() => ajaxRandomCommand(), 500);
+  setInterval(() => ajaxRandomCommand(), 5000);
 
 
 
@@ -32,9 +32,9 @@
     $.ajax({
       type: 'POST',
       data: formData,
-      url: serverUrl,
+      url: serverUrl + '/background',
       cache: false,
-      contentType: false,
+      contentType: file.type,
       processData: false,
       success: () => {
         console.log('success');

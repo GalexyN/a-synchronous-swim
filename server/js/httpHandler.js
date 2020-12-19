@@ -31,8 +31,57 @@ module.exports.router = (req, res, next = () => { }) => {
     next();
   }
 
+  var dataHandler = buff => chunk => {
+    console.log(`Buff: ${buff}`);
+    if (!buff.buff) {
+      buff.buff = chunk;
+    } else {
+      buff.buff = Buffer.concat([buff.buff, chunk]);
+    }
+  };
+
   if (req.method === 'GET') {
-    if (req.url.length > 1) {
+    if (req.url === '/background') {
+
+      var readStreamJPG = fs.createReadStream(module.exports.backgroundImageFile + '.jpg')
+      var readStreamPNG = fs.createReadStream(module.exports.backgroundImageFile + '.png')
+
+      var JPGflag = false;
+      var PNGflag = false;
+
+      var buff = {};
+
+      readStreamJPG.on('error', (err) => {
+        if (err) {
+          JPGflag = true;
+        }
+        if (JPGflag && PNGflag) {
+          respond(404)
+        }
+      });
+
+      readStreamJPG.on('data', dataHandler(buff));
+
+      readStreamJPG.on('end', () => {
+        respond(200, buff.buff, { 'Cache-Control': 'no-store' });
+      });
+
+      readStreamPNG.on('error', (err) => {
+        if (err) {
+          PNGflag = true;
+        }
+        if (JPGflag && PNGflag) {
+          respond(404)
+        }
+      });
+
+      readStreamPNG.on('data', dataHandler(buff));
+
+      readStreamPNG.on('end', () => {
+        respond(200, buff.buff, { 'Cache-Control': 'no-store' });
+      });
+
+    } else if (req.url.length > 1) {
       var urlPath = req.url;
       if (urlPath[0] === '/') {
         urlPath = urlPath.slice(1);
@@ -46,9 +95,9 @@ module.exports.router = (req, res, next = () => { }) => {
 
       fs.readFile(nonRelativePath, (err, data) => {
         if (err) {
-          respond(404);
+          respond(404, null, { 'Cache-Control': 'no-store' });
         } else {
-          respond(200, data, { 'Cache-Control': 'no-cache' });
+          respond(200, data, { 'Cache-Control': 'no-store' });
         }
       });
     } else if (req.url === '/') {
@@ -63,26 +112,46 @@ module.exports.router = (req, res, next = () => { }) => {
     if (!req.url === '/background') {
       respond(403);
     } else {
-      console.log(req.headers['Content-Type'])
-      var buff;
-      req.on('data', chunk => {
-        if (!buff) {
-          buff = chunk;
-        } else {
-          buff = Buffer.concat([buff, chunk]);
-        }
-      });
+      var contentType = req.headers['content-type'];
+
+      var writeFile = module.exports.backgroundImageFile;
+      var removeFile = module.exports.backgroundImageFile;
+
+      if (contentType === 'image/jpeg') {
+        writeFile += '.jpg';
+        removeFile += '.png';
+      } else if (contentType === 'image/png') {
+        writeFile += '.png';
+        removeFile += '.jpg';
+      }
+
+      var buff = {};
+      req.on('data', dataHandler(buff));
       req.on('end', () => {
-        var fileData = multipart.getFile(buff).data;
-        fs.writeFile(module.exports.backgroundImageFile, fileData, (err) => {
-          if (err) {
-            respond(500);
-          } else {
-            respond(201);
-          }
+        var fileData = multipart.getFile(buff.buff).data;
+
+        var writeStream = fs.createWriteStream(writeFile);
+
+        writeStream.on('error', err => {
+          respond(500);
         })
+
+        writeStream.write(fileData, () => {
+          fs.unlink(removeFile, err => {
+            if (err) {
+              if (err.code === 'ENOENT') {
+                respond(201);
+              }
+              respond(500);
+            } else {
+              respond(201);
+            }
+          });
+        });
       });
     }
+  } else if (req.method === 'OPTIONS') {
+    respond(200);
   } else {
     respond(405);
   }
